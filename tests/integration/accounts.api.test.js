@@ -120,11 +120,19 @@ describe("Cuentas y saldos (integracion con Postgres real)", () => {
     expect(ids).toEqual([1, 2, 3]);
   });
 
-  test.todo(
-    "GET /accounts/:id de una cuenta inexistente responde con codigo 404"
-  );
+  // CORRECCIÓN: Implementar tests pendientes (integración)
+  // test.todo("GET /accounts/:id de una cuenta inexistente responde con codigo 404");
+  test("GET /accounts/:id de una cuenta inexistente responde con codigo 404", async () => {
+    const res = await request(app).get("/accounts/999999");
+    expect(res.status).toBe(404);
+  });
 
-  test.todo(
-    "un deposito con amountCents decimal (por ejemplo 100.5) es rechazado con codigo 400"
-  );
+  // test.todo("un deposito con amountCents decimal (por ejemplo 100.5) es rechazado con codigo 400");
+  test("un deposito con amountCents decimal (por ejemplo 100.5) es rechazado con codigo 400", async () => {
+    const id = await crearCuenta("Decimal", 0);
+    const res = await request(app)
+      .post(`/accounts/${id}/deposit`)
+      .send({ amountCents: 100.5 });
+    expect(res.status).toBe(400);
+  });
 });
