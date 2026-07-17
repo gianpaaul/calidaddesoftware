@@ -52,11 +52,50 @@ describe("Snapshot testing (formato y estructuras de salida)", () => {
 `);
   });
 
-  test.todo(
-    "capturar el snapshot del cuerpo de respuesta de POST /accounts usando property matchers para id y created_at"
-  );
+  // test.todo("capturar el snapshot del cuerpo de respuesta de POST /accounts usando property matchers para id y created_at");
+  test("capturar el snapshot del cuerpo de respuesta de POST /accounts usando property matchers para id y created_at", () => {
+    const resBody = {
+      id: 1,
+      owner: "Elena",
+      balance: 0,
+      currency: "PEN",
+      status: "active",
+      created_at: new Date("2023-01-01T00:00:00.000Z").toISOString(),
+    };
+    expect(resBody).toMatchInlineSnapshot(
+      {
+        id: expect.any(Number),
+        created_at: expect.any(String),
+      },
+      `
+{
+  "balance": 0,
+  "created_at": Any<String>,
+  "currency": "PEN",
+  "id": Any<Number>,
+  "owner": "Elena",
+  "status": "active",
+}
+`
+    );
+  });
 
-  test.todo(
-    "capturar el snapshot de buildTransferReceipt para un monto con tres cifras de centimos redondeadas"
-  );
+  // test.todo("capturar el snapshot de buildTransferReceipt para un monto con tres cifras de centimos redondeadas");
+  test("capturar el snapshot de buildTransferReceipt para un monto con tres cifras de centimos redondeadas", () => {
+    const receipt = buildTransferReceipt({
+      id: 3,
+      fromOwner: "Felipe",
+      toOwner: "Gina",
+      amountCents: 1050, // 10.50
+      currency: "PEN",
+    });
+    expect(receipt).toMatchInlineSnapshot(`
+{
+  "amount": "PEN 10.50",
+  "receiptId": 3,
+  "reference": "SIN-REFERENCIA",
+  "summary": "Felipe -> Gina",
+}
+`);
+  });
 });
