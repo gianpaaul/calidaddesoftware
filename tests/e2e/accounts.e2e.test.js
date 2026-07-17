@@ -86,13 +86,15 @@ describe("API bancaria (E2E contra el stack completo)", () => {
     const origen = await nuevaCuenta("Tomas", 10000);
     const destino = await nuevaCuenta("Uma", 0);
 
+    // CORRECCIÓN: usar un reference dinámico para que no colisione con corridas previas de e2e
+    const ref = `PAGO-UNICO-${Date.now()}`;
     await api("/transfers", {
       method: "POST",
       body: JSON.stringify({
         fromId: origen,
         toId: destino,
         amountCents: 2500,
-        reference: "PAGO-UNICO",
+        reference: ref,
       }),
     });
     await api("/transfers", {
@@ -101,7 +103,7 @@ describe("API bancaria (E2E contra el stack completo)", () => {
         fromId: origen,
         toId: destino,
         amountCents: 2500,
-        reference: "PAGO-UNICO",
+        reference: ref,
       }),
     });
 
@@ -109,11 +111,23 @@ describe("API bancaria (E2E contra el stack completo)", () => {
     expect(Number(cOrigen.body.balance)).toBe(7500);
   });
 
-  test.todo(
-    "una consulta a una cuenta inexistente responde con codigo 404"
-  );
+  // CORRECCIÓN: Implementar los test pendientes comentando el original
+  // test.todo("una consulta a una cuenta inexistente responde con codigo 404");
+  test("una consulta a una cuenta inexistente responde con codigo 404", async () => {
+    const res = await api("/accounts/9999999");
+    expect(res.status).toBe(404);
+  });
 
-  test.todo(
-    "un retiro por encima del saldo disponible responde con codigo 422 y no altera el saldo"
-  );
+  // test.todo("un retiro por encima del saldo disponible responde con codigo 422 y no altera el saldo");
+  test("un retiro por encima del saldo disponible responde con codigo 422 y no altera el saldo", async () => {
+    const id = await nuevaCuenta("Xenia", 1000);
+    const res = await api(`/accounts/${id}/withdraw`, {
+      method: "POST",
+      body: JSON.stringify({ amountCents: 5000 }),
+    });
+    expect(res.status).toBe(422);
+
+    const consulta = await api(`/accounts/${id}`);
+    expect(Number(consulta.body.balance)).toBe(1000);
+  });
 });
